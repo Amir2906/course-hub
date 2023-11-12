@@ -15,7 +15,7 @@ module.exports.getEnrolledCourses = async (req, res) => {
         // Retrieve course details for the enrolled courses
         const courses = await Course.find(
             { id: { $in: courseIds } },
-            { id: 1, name: 1, instructor: 1, thumbnail: 1, duration: 1, syllabus: 1 }
+            { id: 1, name: 1, instructor: 1, thumbnail: 1, duration: 1, syllabus: 1, likes: 1, dislikes: 1 }
         );
 
         // Prepare the response data with required fields
@@ -31,7 +31,9 @@ module.exports.getEnrolledCourses = async (req, res) => {
                 progress: enrollment.progress,
                 isLiked: enrollment.isLiked,
                 isDisliked: enrollment.isDisliked,
-                status: enrollment.status
+                status: enrollment.status,
+                likes: course.likes,
+                dislikes: course.dislikes
             };
         });
 
@@ -122,10 +124,58 @@ module.exports.enrolledCourseDetails = async (req, res) => {
             name: course.name,
             instructor: course.instructor,
             duration: course.duration,
-            thumbnail: course.thumbnail,
+            thumbnail: course.thumbnail
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+module.exports.toggleLike = async (req, res) => {
+    const { courseId, studentId } = req.params;
+    // console.log(req.params);
+    try {
+        const enrollment = await Enrollment.findOne({ courseId, studentId });
+        // console.log(enrollment);
+        if (enrollment.isDisliked) {
+            // Remove from disliked courses
+            await Enrollment.updateOne({ courseId, studentId }, { isDisliked: false });
+            // Update dislikes count in the Course model
+            await Course.updateOne({ id: courseId }, { $inc: { dislikes: -1 } });
+        }
+
+        await Enrollment.updateOne({ courseId, studentId }, { isLiked: !enrollment.isLiked });
+        const update = enrollment.isLiked ? { $inc: { likes: -1 } } : { $inc: { likes: 1 } };
+        await Course.updateOne({ id: courseId }, update);
+
+        res.json({ message: `Course liked status updated successfully` });
+    } catch (error) {
+        console.error('Error toggling like status:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+};
+
+module.exports.toggleDislike = async (req, res) => {
+    const { courseId, studentId } = req.params;
+
+    try {
+        const enrollment = await Enrollment.findOne({ courseId, studentId });
+
+        if (enrollment.isLiked) {
+            // Remove from liked courses
+            await Enrollment.updateOne({ courseId, studentId }, { isLiked: false });
+            // Update likes count in the Course model
+            await Course.updateOne({ id: courseId }, { $inc: { likes: -1 } });
+        }
+
+        await Enrollment.updateOne({ courseId, studentId }, { isDisliked: !enrollment.isDisliked });
+        const update = enrollment.isDisliked ? { $inc: { dislikes: -1 } } : { $inc: { dislikes: 1 } };
+        await Course.updateOne({ id: courseId }, update);
+
+        res.json({ message: `Course disliked status updated successfully` });
+    } catch (error) {
+        console.error('Error toggling dislike status:', error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}

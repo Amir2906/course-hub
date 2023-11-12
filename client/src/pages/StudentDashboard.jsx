@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import Navbar from '../components/Navbar'
 import Logo from '../assets/Logo.png'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchEnrolledCourses, updateCourseStatus } from '../store'
+import { fetchEnrolledCourses, toggleDislike, toggleLike, updateCourseStatus } from '../store'
 import { Navigate, useNavigate } from 'react-router-dom'
 import ThumbUpRoundedIcon from '@mui/icons-material/ThumbUpRounded';
 import ThumbDownAltRoundedIcon from '@mui/icons-material/ThumbDownAltRounded';
@@ -19,6 +19,8 @@ const StudentDashboard = () => {
     const enrolledCourses = useSelector((state) => state.coursehub.enrolledCourses);
     const enrolledCourseLoading = useSelector((state) => state.coursehub.enrolledCourseLoading);
     const updateCourseLoading = useSelector((state) => state.coursehub.updateCourseLoading);
+    const toggleLikeLoading = useSelector((state) => state.coursehub.toggleLikeLoading)
+    const toggleDislikeLoading = useSelector((state) => state.coursehub.toggleDislikeLoading)
     const navigate = useNavigate();
 
     // const userToken = useSelector((state) => state.coursehub.userToken);
@@ -29,8 +31,6 @@ const StudentDashboard = () => {
     // console.log(vaildToken);
 
     const [data, setData] = useState(enrolledCourses);
-    const [isLiked, setIsLiked] = useState(false);
-    const [isDisliked, setIsDisliked] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [searchResults, setSearchResults] = useState([]);
     const dispatch = useDispatch();
@@ -43,6 +43,17 @@ const StudentDashboard = () => {
     const handleCourseStatus = (id) => {
         // console.log(id);
         dispatch(updateCourseStatus({ courseId: id }));
+    }
+
+    const handleLikeStatus = (id) => {
+        // console.log(id);
+        dispatch(toggleLike({ courseId: id }));
+        // console.log(enrolledCourses);
+    }
+
+    const handleDislikeStatus = (id) => {
+        // console.log(id);
+        dispatch(toggleDislike({ courseId: id }));
     }
 
     const courseDetails = (id) => {
@@ -62,13 +73,6 @@ const StudentDashboard = () => {
         );
         setSearchResults(filteredData);
     };
-
-    const handleLike = () => {
-        setIsLiked(!isLiked);
-    }
-    const handleDislike = () => {
-        setIsDisliked(!isDisliked);
-    }
 
     useEffect(() => {
         if (enrolledCourseLoading === 'rejected') {
@@ -94,12 +98,40 @@ const StudentDashboard = () => {
         }
     }, [updateCourseLoading])
 
+    useEffect(() => {
+        if (toggleLikeLoading === 'rejected') {
+            enqueueSnackbar("Some Error Occured", { variant: 'error' });
+        }
+        else if (toggleLikeLoading === 'pending') {
+            // enqueueSnackbar("enrolledCourseLoading...", {variant: 'error'});
+            <Spinner />
+        }
+        else if (toggleLikeLoading === 'success') {
+            // enqueueSnackbar("Course Status updated", { variant: 'success' });
+            // return <Navigate to='/student' />;
+        }
+    }, [toggleLikeLoading])
+
+    useEffect(() => {
+        if (toggleDislikeLoading === 'rejected') {
+            enqueueSnackbar("Some Error Occured", { variant: 'error' });
+        }
+        else if (toggleDislikeLoading === 'pending') {
+            // enqueueSnackbar("enrolledCourseLoading...", {variant: 'error'});
+            <Spinner />
+        }
+        else if (toggleDislikeLoading === 'success') {
+            // enqueueSnackbar("Course Status updated", { variant: 'success' });
+            // return <Navigate to='/student' />;
+        }
+    }, [toggleDislikeLoading])
+
     if (!localStorage.getItem('userToken')) {
         return <Navigate to='/login' />;
     }
 
     const dataToRender = searchQuery ? searchResults : enrolledCourses;
-
+    // console.log(dataToRender);
     return (
         <div>
             <Navbar />
@@ -160,20 +192,30 @@ const StudentDashboard = () => {
                                             </div>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            {
-                                                d.isLiked ? (
-                                                    <ThumbUpRoundedIcon onClick={handleLike} className="text-4xl mr-2 hover:text-blue-500 transition-color" />
-                                                ) : (
-                                                    <ThumbUpOutlinedIcon onClick={handleLike} className="text-4xl mr-2 hover:text-blue-500 transition-color" />
-                                                )
-                                            }
-                                            {
-                                                d.isDisliked ? (
-                                                    <ThumbDownAltRoundedIcon onClick={handleDislike} className="text-4xl mr-2 hover:text-blue-500 transition-color" />
-                                                ) : (
-                                                    <ThumbDownAltOutlinedIcon onClick={handleDislike} className="text-4xl hover:text-blue-500 transition-color" />
-                                                )
-                                            }
+                                            <div className="flex justify-left items-center">
+                                                <Tooltip onClick={() => handleLikeStatus(d.id)} title={d.isLiked ? 'Remove from Liked Courses' : 'Like Course'}>
+                                                    {
+                                                        d.isLiked ? (
+                                                            <ThumbUpRoundedIcon className="text-4xl mr-2 text-blue-500 hover:text-blue-600 transition-color" />
+                                                        ) : (
+                                                            <ThumbUpOutlinedIcon className="text-4xl mr-2 hover:text-blue-500 transition-color" />
+                                                        )
+                                                    }
+                                                </Tooltip>
+                                                <span className='text-black-900'>{d.likes}</span>
+                                            </div>
+                                            <div className="flex justify-left items-center">
+                                                <Tooltip onClick={() => handleDislikeStatus(d.id)} title={d.isDisliked ? 'Remove from Disliked Courses' : 'Dislike Course'}>
+                                                    {
+                                                        d.isDisliked ? (
+                                                            <ThumbDownAltRoundedIcon className="text-4xl mr-2 text-blue-500 hover:text-blue-500 transition-color" />
+                                                        ) : (
+                                                            <ThumbDownAltOutlinedIcon className="text-4xl mr-2 hover:text-blue-500 transition-color" />
+                                                        )
+                                                    }
+                                                </Tooltip>
+                                                <span className='text-black-900'>{d.dislikes}</span>
+                                            </div>
                                             <Tooltip title={d.status}>
 
                                                 <button onClick={() => handleCourseStatus(d.id)}>

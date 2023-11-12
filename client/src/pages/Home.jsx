@@ -9,20 +9,25 @@ import Logo from '../assets/Logo.png'
 import { enqueueSnackbar } from 'notistack'
 import Spinner from '../components/Loading'
 import Footer from '../components/Footer'
+import { Tooltip } from '@mui/material'
+import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
+import ThumbDownAltOutlinedIcon from '@mui/icons-material/ThumbDownAltOutlined';
 
 const Home = () => {
     const courses = useSelector((state) => state.coursehub.courses);
     const enrollInCourseLoading = useSelector((state) => state.coursehub.enrollInCourseLoading);
     const courseLoading = useSelector((state) => state.coursehub.courseLoading);
-    // const userToken = useSelector((state) => state.coursehub.userToken);
-    // const studentId = useSelector((state) => state.coursehub.studentId);
-    // const vaildToken = useSelector((state) => state.coursehub.vaildToken);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [data, setData] = useState(courses);
+
+    // const userToken = useSelector((state) => state.coursehub.userToken);
+    // const studentId = useSelector((state) => state.coursehub.studentId);
+    // const vaildToken = useSelector((state) => state.coursehub.vaildToken);
     // console.log(userToken);
     // console.log(studentId);
     // console.log(vaildToken);
+
     useEffect(() => {
         dispatch(fetchCourses());
         setData(courses);
@@ -88,7 +93,6 @@ const Home = () => {
     }
 
     const dataToRender = searchQuery ? searchResults : courses;
-
     return (
         <>
             <Navbar />
@@ -123,7 +127,20 @@ const Home = () => {
                                             <p className="text-gray-800 text-base font-bold">{d.name}</p>
                                             <p className="text-gray-800 text-base">Instructor: {d.instructor}</p>
                                         </div>
-                                        <div className="flex justify-center items-center mt-4">
+                                        <div className="flex justify-between items-center mt-4">
+                                            <div className="flex justify-left items-center">
+                                                <Tooltip title='Likes'>
+                                                    <ThumbUpOutlinedIcon className="text-4xl mr-2" />
+                                                </Tooltip>
+                                                <span className='text-black-900'>{d.likes}</span>
+                                            </div>
+                                            <div className="flex justify-left items-center">
+                                                <Tooltip title='Dislikes'>
+                                                    <ThumbDownAltOutlinedIcon className="text-4xl mr-2" />
+                                                </Tooltip>
+                                                <span className='text-black-900'>{d.dislikes}</span>
+                                            </div>
+
                                             <button onClick={() => handleEnroll(d.id)} className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'>Enroll</button>
                                         </div>
                                     </div>

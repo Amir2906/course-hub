@@ -58,7 +58,15 @@ const courseSchema = new mongoose.Schema({
         required: true,
       },
     },
-  ]
+  ],
+  likes: {
+    type: Number,
+    default: 0
+  },
+  dislikes: {
+    type: Number,
+    default: 0
+  }
 });
 
 module.exports = mongoose.model('Course', courseSchema);

@@ -13,7 +13,9 @@ const initialState = {
     courseLoading: 'idle',
     enrolledCourseLoading: 'idle',
     enrollInCourseLoading: 'idle',
-    updateCourseLoading: 'idle'
+    updateCourseLoading: 'idle',
+    toggleLikeLoading: 'idle',
+    toggleDislikeLoading: 'idle',
 };
 
 export const loginUser = createAsyncThunk('coursehub/login', async ({ email, password }, thunkAPI) => {
@@ -100,7 +102,7 @@ export const enrollInCourse = createAsyncThunk(
 
 export const updateCourseStatus = createAsyncThunk(
     'courses/updateEnrollStatus',
-    async ({ courseId }) => {
+    async ({ courseId }, {getState}) => {
         try {
             // Get the user token and student ID from local storage
             const userToken = localStorage.getItem('userToken');
@@ -113,6 +115,48 @@ export const updateCourseStatus = createAsyncThunk(
                 }
             });
             return 'Status updated successfully';
+        } catch (error) {
+            throw error.response.data.message; // Pass the error message from the backend
+        }
+    }
+);
+
+export const toggleLike = createAsyncThunk(
+    'courses/toggle-like',
+    async ({ courseId }) => {
+        try {
+            // Get the user token and student ID from local storage
+            const userToken = localStorage.getItem('userToken');
+            const studentId = localStorage.getItem('studentId');
+            console.log(typeof(courseId));
+            // Send a POST request to enroll in the course
+            await axios.post(`http://localhost:5000/api/enroll/toggle-like/${studentId}/${courseId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            });
+            return 'Course liked status updated successfully';
+        } catch (error) {
+            throw error.response.data.message; // Pass the error message from the backend
+        }
+    }
+);
+
+export const toggleDislike = createAsyncThunk(
+    'courses/toggle-dislike',
+    async ({ courseId }) => {
+        try {
+            // Get the user token and student ID from local storage
+            const userToken = localStorage.getItem('userToken');
+            const studentId = localStorage.getItem('studentId');
+            console.log(courseId);
+            // Send a POST request to enroll in the course
+            await axios.post(`http://localhost:5000/api/enroll/toggle-dislike/${studentId}/${courseId}`, {}, {
+                headers: {
+                    Authorization: `Bearer ${userToken}`
+                }
+            });
+            return 'Course disliked status updated successfully';
         } catch (error) {
             throw error.response.data.message; // Pass the error message from the backend
         }
@@ -147,6 +191,8 @@ const CourseHubSlice = createSlice({
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(fetchCourses.pending, (state) => {
             state.courseLoading = 'pending';
@@ -154,6 +200,8 @@ const CourseHubSlice = createSlice({
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(fetchCourses.rejected, (state, action) => {
             state.error = action.payload;
@@ -162,12 +210,16 @@ const CourseHubSlice = createSlice({
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(fetchEnrolledCourses.pending, (state) => {
             state.enrolledCourseLoading = 'pending';
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(fetchEnrolledCourses.fulfilled, (state, action) => {
             state.enrolledCourses = action.payload;
@@ -175,6 +227,8 @@ const CourseHubSlice = createSlice({
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(fetchEnrolledCourses.rejected, (state, action) => {
             state.error = action.payload;
@@ -182,12 +236,16 @@ const CourseHubSlice = createSlice({
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(enrollInCourse.pending, (state) => {
             state.enrollInCourseLoading = 'pending'; // Set loading state
             state.loginLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(enrollInCourse.rejected, (state, action) => {
             state.enrollInCourseLoading = 'rejected';
@@ -195,30 +253,90 @@ const CourseHubSlice = createSlice({
             state.error = action.payload;
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(enrollInCourse.fulfilled, (state, action) => {
             state.enrollInCourseLoading = 'success';
             state.loginLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
             state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(updateCourseStatus.pending, (state) => {
             state.updateCourseLoading = 'pending';
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(updateCourseStatus.fulfilled, (state) => {
             state.updateCourseLoading = 'success';
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
         });
         builder.addCase(updateCourseStatus.rejected, (state, action) => {
             state.updateCourseLoading = 'rejected';
             state.loginLoading = 'idle';
             state.enrollInCourseLoading = 'idle';
             state.enrolledCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
+            state.error = action.payload;
+        });
+        builder.addCase(toggleLike.pending, (state) => {
+            state.toggleLikeLoading = 'pending';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
+        });
+        builder.addCase(toggleLike.fulfilled, (state) => {
+            state.toggleLikeLoading = 'success';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
+        });
+        builder.addCase(toggleLike.rejected, (state, action) => {
+            state.toggleLikeLoading = 'rejected';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleDislikeLoading = 'idle';
+            state.error = action.payload;
+        });
+        builder.addCase(toggleDislike.pending, (state) => {
+            state.toggleDislikeLoading = 'pending';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+        });
+        builder.addCase(toggleDislike.fulfilled, (state) => {
+            state.toggleDislikeLoading = 'success';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
+        });
+        builder.addCase(toggleDislike.rejected, (state, action) => {
+            state.toggleDislikeLoading = 'rejected';
+            state.loginLoading = 'idle';
+            state.enrollInCourseLoading = 'idle';
+            state.enrolledCourseLoading = 'idle';
+            state.updateCourseLoading = 'idle';
+            state.toggleLikeLoading = 'idle';
             state.error = action.payload;
         });
     }
