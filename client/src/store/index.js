@@ -64,7 +64,7 @@ export const fetchCourses = createAsyncThunk('coursehub/fetchCourses', async () 
     }
 });
 
-export const fetchEnrolledCourses = createAsyncThunk('courses/fetchEnrolledCourses', async () => {
+export const fetchEnrolledCourses = createAsyncThunk('coursehub/fetchEnrolledCourses', async () => {
     try {
         const response = await axios.get(`http://localhost:5000/api/enroll/${localStorage.getItem('studentId')}`, {
             headers: {
@@ -79,7 +79,7 @@ export const fetchEnrolledCourses = createAsyncThunk('courses/fetchEnrolledCours
 });
 
 export const enrollInCourse = createAsyncThunk(
-    'courses/enroll',
+    'coursehub/enroll',
     async ({ courseId }) => {
         try {
             // Get the user token and student ID from local storage
@@ -101,7 +101,7 @@ export const enrollInCourse = createAsyncThunk(
 );
 
 export const updateCourseStatus = createAsyncThunk(
-    'courses/updateEnrollStatus',
+    'coursehub/updateEnrollStatus',
     async ({ courseId }, {getState}) => {
         try {
             // Get the user token and student ID from local storage
@@ -122,7 +122,7 @@ export const updateCourseStatus = createAsyncThunk(
 );
 
 export const toggleLike = createAsyncThunk(
-    'courses/toggle-like',
+    'coursehub/toggle-like',
     async ({ courseId }) => {
         try {
             // Get the user token and student ID from local storage
@@ -143,7 +143,7 @@ export const toggleLike = createAsyncThunk(
 );
 
 export const toggleDislike = createAsyncThunk(
-    'courses/toggle-dislike',
+    'coursehub/toggle-dislike',
     async ({ courseId }) => {
         try {
             // Get the user token and student ID from local storage
